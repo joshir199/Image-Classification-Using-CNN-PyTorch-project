@@ -18,15 +18,8 @@ parser.add_argument('--outf', default='/output', help='folder for output images 
 parser.add_argument('--ckpf', default='', help='path to model checkpoint file to continue training')
 
 args = parser.parse_args()
-lr = args.learning_rate
-
-# Is CUDA available?
-cuda = torch.cuda.is_available()
-print("Is cuda available: ", cuda)
-# Seed for replication
 torch.manual_seed(args.seed)
-if cuda:
-    torch.cuda.manual_seed(args.seed)
+lr = args.learning_rate
 
 
 def train_model(model, train_loader, validation_loader, optimizer, n_epochs=5):
@@ -40,10 +33,6 @@ def train_model(model, train_loader, validation_loader, optimizer, n_epochs=5):
     for epoch in range(n_epochs):
         for x, label in train_loader:
             # call train() on model which extents nn.module
-            if cuda:
-                x, label = x.cuda(), label.cuda()
-                model = model.cuda()
-
             model.train()
             # reset the weights derivative values
             optimizer.zero_grad()
@@ -62,9 +51,6 @@ def train_model(model, train_loader, validation_loader, optimizer, n_epochs=5):
 
         # perform a prediction on the validation  data
         for x_test, y_test in validation_loader:
-            if cuda:
-                x_test, y_test = x_test.cuda(), y_test.cuda()
-
             model.eval()
             output = model(x_test)
             # get index of maximum value : argmax
@@ -86,6 +72,7 @@ if args.train:
     val_dataset = DataLoader(dataset=getValidationDataset(16), batch_size=5000)
     showData(getTrainDataset(16)[3], 16)
 
+
     print("Before Training starts: ")
     ACC, LOSS = train_model(model=model, train_loader=train_dataset, validation_loader=val_dataset, optimizer=optimizer)
     print("After Training ends: ")
@@ -94,3 +81,5 @@ if args.train:
     plt.xlabel("batch iterations ")
     plt.ylabel("Cost/total loss ")
     plt.show()
+
+
